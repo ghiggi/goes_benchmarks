@@ -1,0 +1,9 @@
+{
+    "Local (Numpy)": 2.57,
+    "Local (Dask)": 3.34,
+    "HTTPS+bytesIO (Numpy)": 28.58,
+    "HTTPS + FSSPEC (Dask)": 28.58,
+    "S3 + FSSPEC (Numpy)": 28.58,
+    "S3 + FSSPEC (Dask)": 28.58,
+    "HTTPS + bytesIO (Numpy)": 28.58
+}
