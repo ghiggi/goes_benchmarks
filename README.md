@@ -41,6 +41,40 @@ Full Disc arrays have 21 % of pixels of unvalid (nan) pixels.
 
 # Results 
 
+Sorted by elapsed time (in seconds) when reading Full Disc
+
+|                           | ReadFullDisc_C01 | ReadChunk_C01  |
+|---------------------------|------------------|----------------|
+| Local (Dask)              | 2.28 +/- 0.0     | 1.57 +/- 0.24  |
+| Local (Numpy)             | 3.5 +/- 0.5      | 0.89 +/- 0.08  |
+| Download & Remove (Dask)  | 4.38 +/- 0.14    | 3.38 +/- 0.3   |
+| Download & Remove (Numpy) | 4.42 +/- 0.26    | 1.86 +/- 0.02  |
+| HTTPS + bytesIO (Numpy)   | 5.66 +/- 0.32    | 4.55 +/- 0.28  |
+| S3 + FSSPEC (Dask)        | 15.5 +/- 0.36    | 13.71 +/- 0.5  |
+| HTTPS + FSSPEC (Dask)     | 15.52 +/- 1.12   | 13.55 +/- 0.72 |
+| HTTPS + FSSPEC (Numpy)    | 19.11 +/- 0.94   | 6.7 +/- 0.34   |
+| S3 + FSSPEC (Numpy)       | 19.42 +/- 0.84   | 6.9 +/- 0.24   |
+| Kerchunk (Dask)           | 28.25 +/- 0.26   | 0.56 +/- 0.12  |
+| Kerchunk (Numpy)          | 265.77 +/- 4.58  | 1.46 +/- 0.84  |
+| netCDF #mode=bytes (Dask) | 278.13 +/- 1.6   | 278.8 +/- 2.0  |
+
+Sorted by elapsed time (in seconds) when reading a single chunk (226,226)
+
+|                           | ReadFullDisc_C01 | ReadChunk_C01  |
+|---------------------------|------------------|----------------|
+| Kerchunk (Dask)           | 28.25 +/- 0.26   | 0.56 +/- 0.12  |
+| Local (Numpy)             | 3.5 +/- 0.5      | 0.89 +/- 0.08  |
+| Kerchunk (Numpy)          | 265.77 +/- 4.58  | 1.46 +/- 0.84  |
+| Local (Dask)              | 2.28 +/- 0.0     | 1.57 +/- 0.24  |
+| Download & Remove (Numpy) | 4.42 +/- 0.26    | 1.86 +/- 0.02  |
+| Download & Remove (Dask)  | 4.38 +/- 0.14    | 3.38 +/- 0.3   |
+| HTTPS + bytesIO (Numpy)   | 5.66 +/- 0.32    | 4.55 +/- 0.28  |
+| HTTPS + FSSPEC (Numpy)    | 19.11 +/- 0.94   | 6.7 +/- 0.34   |
+| S3 + FSSPEC (Numpy)       | 19.42 +/- 0.84   | 6.9 +/- 0.24   |
+| HTTPS + FSSPEC (Dask)     | 15.52 +/- 1.12   | 13.55 +/- 0.72 |
+| S3 + FSSPEC (Dask)        | 15.5 +/- 0.36    | 13.71 +/- 0.5  |
+| netCDF #mode=bytes (Dask) | 278.13 +/- 1.6   | 278.8 +/- 2.0  |
+
 # Notes on NetCDF4/HDF5, Zarr and Kerchunk 
   
 ### NetCDF4/HDF5 files
