@@ -19,17 +19,17 @@ import requests
 import xarray as xr
 from io import BytesIO
 
-# results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/results/"
-# data_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/data/"
-
 # Define directory where saving results
+# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/"
 base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 results_dir = os.path.join(base_dir, "results")
 data_dir = os.path.join(base_dir, "data")
 
 # Define filepaths
-local_fpath = os.path.join(data_dir, "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc")
-reference_fpath = os.path.join(data_dir, "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc.json")
+fname = "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
+local_fpath = os.path.join(data_dir, fname)
+reference_fpath = os.path.join(data_dir, fname + ".json")
+tmp_fpath = os.path.join("/tmp", fname)
 
 http_fpath = "https://noaa-goes16.s3.amazonaws.com/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
 nc_mode_fpath = "https://noaa-goes16.s3.amazonaws.com/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc#mode=bytes"
@@ -202,6 +202,34 @@ t_f = time.time()
 t_elapsed = round(t_f - t_i, 2)
 result_dict['S3 + FSSPEC (Dask)'] = t_elapsed
 print(t_elapsed)  # 21-23 s
+
+####------------------------------------------------
+#### Download & Remove (Numpy)
+t_i = time.time()
+fs = fsspec.filesystem('s3', anon=True)
+fs.get(s3_fpath, tmp_fpath)
+ds = xr.open_dataset(tmp_fpath)
+apply_custom_fun(ds)
+os.remove(tmp_fpath)
+t_f = time.time()
+
+t_elapsed = round(t_f - t_i, 2)
+result_dict['Download & Remove (Numpy)'] = t_elapsed
+print(t_elapsed)  
+
+####------------------------------------------------
+#### Download & Remove (Dask)
+t_i = time.time()
+fs = fsspec.filesystem('s3', anon=True)
+fs.get(s3_fpath, tmp_fpath)
+ds = xr.open_dataset(tmp_fpath, chunks=chunks_dict)
+apply_custom_fun(ds)
+os.remove(tmp_fpath)
+t_f = time.time()
+
+t_elapsed = round(t_f - t_i, 2)
+result_dict['Download & Remove (Dask)'] = t_elapsed
+print(t_elapsed)   
 
 ####------------------------------------------------
 #### Write JSON

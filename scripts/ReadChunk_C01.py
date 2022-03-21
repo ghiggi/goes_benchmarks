@@ -19,17 +19,17 @@ import requests
 import xarray as xr
 from io import BytesIO
 
-# results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/results/"
-# data_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/data/"
-
 # Define directory where saving results
+# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/"
 base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 results_dir = os.path.join(base_dir, "results")
 data_dir = os.path.join(base_dir, "data")
 
 # Define filepaths
-local_fpath = os.path.join(data_dir, "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc")
-reference_fpath = os.path.join(data_dir, "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc.json")
+fname = "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
+local_fpath = os.path.join(data_dir, fname)
+reference_fpath = os.path.join(data_dir, fname + ".json")
+tmp_fpath = os.path.join("/tmp", fname)
 
 http_fpath = "https://noaa-goes16.s3.amazonaws.com/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
 nc_mode_fpath = "https://noaa-goes16.s3.amazonaws.com/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc#mode=bytes"
@@ -47,7 +47,6 @@ def apply_custom_fun(ds):
     dummy = ds['Rad'].isel(y=slice(0,226), x=slice(0,226)).plot.imshow()
     return None
 
-
 # Define filename where saving results
 current_time = datetime.datetime.now().strftime('%y%m%d%H%M%S')
 result_fpath = os.path.join(results_dir, exp_name + "_" + current_time + ".json")
@@ -64,7 +63,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['Local (Numpy)'] = t_elapsed
-print(t_elapsed)  # 3.2 - 3.7 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Local (dask)
@@ -75,7 +74,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['Local (Dask)'] = t_elapsed
-print(t_elapsed)  # 4.45 s
+print(t_elapsed) 
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (numpy)
@@ -88,7 +87,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['HTTPS + bytesIO (Numpy)'] = t_elapsed
-print(t_elapsed)  # 7.0 - 7.4 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (dask)
@@ -104,7 +103,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['HTTPS + bytesIO (Numpy)'] = t_elapsed
-print(t_elapsed)  # 7.7 - 7.8 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Kerchunk (Numpy)
@@ -121,7 +120,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['Kerchunk (Numpy)'] = t_elapsed
-print(t_elapsed)  # 12 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Kerchunk (Dask)
@@ -138,7 +137,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['Kerchunk (Dask)'] = t_elapsed
-print(t_elapsed)  # 36 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### nc mode byte  (dask)
@@ -151,7 +150,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['netCDF #mode=bytes (Dask)'] = t_elapsed
-print(t_elapsed)  # 286 s --> 4.7 minutes
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Numpy)
@@ -163,7 +162,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['HTTPS + FSSPEC (Numpy)'] = t_elapsed
-print(t_elapsed)  # 19-23 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Dask)
@@ -175,7 +174,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['HTTPS + FSSPEC (Dask)'] = t_elapsed
-print(t_elapsed)  # 19-23 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### S3 + fsspec (Numpy)
@@ -187,7 +186,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['S3 + FSSPEC (Numpy)'] = t_elapsed
-print(t_elapsed)  # 21-23 s
+print(t_elapsed)
 
 ####------------------------------------------------
 #### S3 + fsspec (Dask)
@@ -199,7 +198,35 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['S3 + FSSPEC (Dask)'] = t_elapsed
-print(t_elapsed)  # 21-23 s
+print(t_elapsed)
+
+####------------------------------------------------
+#### Download & Remove (Numpy)
+t_i = time.time()
+fs = fsspec.filesystem('s3', anon=True)
+fs.get(s3_fpath, tmp_fpath)
+ds = xr.open_dataset(tmp_fpath)
+apply_custom_fun(ds)
+os.remove(tmp_fpath)
+t_f = time.time()
+
+t_elapsed = round(t_f - t_i, 2)
+result_dict['Download & Remove (Numpy)'] = t_elapsed
+print(t_elapsed)  
+
+####------------------------------------------------
+#### Download & Remove (Dask)
+t_i = time.time()
+fs = fsspec.filesystem('s3', anon=True)
+fs.get(s3_fpath, tmp_fpath)
+ds = xr.open_dataset(tmp_fpath, chunks=chunks_dict)
+apply_custom_fun(ds)
+os.remove(tmp_fpath)
+t_f = time.time()
+
+t_elapsed = round(t_f - t_i, 2)
+result_dict['Download & Remove (Dask)'] = t_elapsed
+print(t_elapsed)   
 
 ####------------------------------------------------
 #### Write JSON
