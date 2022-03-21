@@ -1,4 +1,4 @@
-name: io_benchmark
+name: goes_benchmarks
 channels:
   - conda-forge
   - defaults
