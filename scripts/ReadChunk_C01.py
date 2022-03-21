@@ -20,7 +20,8 @@ import xarray as xr
 from io import BytesIO
 
 # Define directory where saving results
-# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/"
+# base_dir = "/home/ghiggi/Projects/goes_benchmarks/"
+# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/"
 base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 results_dir = os.path.join(base_dir, "results")
 data_dir = os.path.join(base_dir, "data")
@@ -141,16 +142,16 @@ print(t_elapsed)
 
 ####------------------------------------------------
 #### nc mode byte  (dask)
-t_i = time.time()
-# nc = netCDF4.Dataset(nc_mode_fpath, mode="r")
-# ds = xr.open_dataset(xr.backends.NetCDF4DataStore(nc))
-ds = xr.open_dataset(nc_mode_fpath, chunks=chunks_dict)
-ds['Rad'].plot.imshow()
-t_f = time.time()
+# t_i = time.time()
+# # nc = netCDF4.Dataset(nc_mode_fpath, mode="r")
+# # ds = xr.open_dataset(xr.backends.NetCDF4DataStore(nc))
+# ds = xr.open_dataset(nc_mode_fpath, chunks=chunks_dict)
+# ds['Rad'].plot.imshow()
+# t_f = time.time()
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict['netCDF #mode=bytes (Dask)'] = t_elapsed
-print(t_elapsed)
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict['netCDF #mode=bytes (Dask)'] = t_elapsed
+# print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Numpy)

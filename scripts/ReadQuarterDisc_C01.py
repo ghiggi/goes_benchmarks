@@ -20,7 +20,8 @@ import xarray as xr
 from io import BytesIO
 
 # Define directory where saving results
-# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/"
+# base_dir = "/home/ghiggi/Projects/goes_benchmarks/"
+# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/"
 base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 results_dir = os.path.join(base_dir, "results")
 data_dir = os.path.join(base_dir, "data")

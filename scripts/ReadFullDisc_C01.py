@@ -20,7 +20,8 @@ import xarray as xr
 from io import BytesIO
 
 # Define directory where saving results
-# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/"
+# base_dir = "/home/ghiggi/Projects/goes_benchmarks/"
+# base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/"
 base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 results_dir = os.path.join(base_dir, "results")
 data_dir = os.path.join(base_dir, "data")
@@ -109,20 +110,20 @@ print(t_elapsed)  # 7.7 - 7.8 s
 
 ####------------------------------------------------
 #### Kerchunk (Numpy)
-t_i = time.time()
-fs = fsspec.filesystem("reference",
-                       fo=reference_fpath,
-                       remote_protocol="s3",
-                       remote_options={"anon": True},
-                       skip_instance_cache=True)
-m = fs.get_mapper("")
-ds = xr.open_dataset(m, engine='zarr', consolidated=False)
-apply_custom_fun(ds)
-t_f = time.time()
+# t_i = time.time()
+# fs = fsspec.filesystem("reference",
+#                        fo=reference_fpath,
+#                        remote_protocol="s3",
+#                        remote_options={"anon": True},
+#                        skip_instance_cache=True)
+# m = fs.get_mapper("")
+# ds = xr.open_dataset(m, engine='zarr', consolidated=False)
+# apply_custom_fun(ds)
+# t_f = time.time()
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict['Kerchunk (Numpy)'] = t_elapsed
-print(t_elapsed)  # 12 s
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict['Kerchunk (Numpy)'] = t_elapsed
+# print(t_elapsed)   
 
 ####------------------------------------------------
 #### Kerchunk (Dask)
@@ -139,20 +140,20 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict['Kerchunk (Dask)'] = t_elapsed
-print(t_elapsed)  # 36 s
+print(t_elapsed)   
 
 ####------------------------------------------------
 #### nc mode byte  (dask)
-t_i = time.time()
-# nc = netCDF4.Dataset(nc_mode_fpath, mode="r")
-# ds = xr.open_dataset(xr.backends.NetCDF4DataStore(nc))
-ds = xr.open_dataset(nc_mode_fpath, chunks=chunks_dict)
-ds['Rad'].plot.imshow()
-t_f = time.time()
+# t_i = time.time()
+# # nc = netCDF4.Dataset(nc_mode_fpath, mode="r")
+# # ds = xr.open_dataset(xr.backends.NetCDF4DataStore(nc))
+# ds = xr.open_dataset(nc_mode_fpath, chunks=chunks_dict)
+# ds['Rad'].plot.imshow()
+# t_f = time.time()
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict['netCDF #mode=bytes (Dask)'] = t_elapsed
-print(t_elapsed)  # 286 s --> 4.7 minutes
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict['netCDF #mode=bytes (Dask)'] = t_elapsed
+# print(t_elapsed)  # 286 s --> 4.7 minutes
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Numpy)

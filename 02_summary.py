@@ -11,9 +11,13 @@ import json
 import numpy as np
 import pandas as pd
 
-results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_io_benchmark/results/"
+results_dir = "/home/ghiggi/Projects/goes_benchmarks/results/"
+# results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/results/"
 
-patterns = ["ReadFullDisc_C01", "ReadQuarterDisc_C01", "ReadChunk_C01"]
+patterns = ["ReadFullDisc_C01", 
+            "ReadChunk_C01", 
+            #"ReadQuarterDisc_C01"
+]
 global_dict = {}
 global_dict_str = {}
 for pattern in patterns:
@@ -42,3 +46,15 @@ for pattern in patterns:
 # Show summary statistics
 df = pd.DataFrame(global_dict_str)
 print(df)
+
+## ReadFullDisc_C01 
+pattern = "ReadFullDisc_C01"
+ordered_dict = {k: v for k, v in sorted(global_dict[pattern] .items(), key=lambda item: item[1])}
+ordered_keys = list(ordered_dict.keys())
+df.loc[ordered_keys]
+
+## ReadFullDisc_C01 
+pattern = "ReadChunk_C01"
+ordered_dict = {k: v for k, v in sorted(global_dict[pattern] .items(), key=lambda item: item[1])}
+ordered_keys = list(ordered_dict.keys())
+df.loc[ordered_keys]
