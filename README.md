@@ -49,8 +49,8 @@ Full Disc arrays have 21 % of pixels of unvalid (nan) pixels.
 - Suffer of performance issues when accessed from cloud object storage.
 - Do not allow concurrent multi-threaded reads.
 - Can be directly opened from s3 but performance is poor because:
-  -- HDF5/NetCDF library executes many small reads.
-  -- s3 storage has significantly higher latency than traditional file systems.
+  1. HDF5/NetCDF library executes many small reads.
+  2. s3 storage has significantly higher latency than traditional file systems.
 
 ### Zarr
 - was specifically designed to overcome NetCDF4/HDF5 issues.
@@ -58,7 +58,7 @@ Full Disc arrays have 21 % of pixels of unvalid (nan) pixels.
 - Each chunk is a separate object.
 - Enable unlimited file sizes and parallel writes/reads.
 - Avoid HDF5/netCDF4 library issues with python concurrent multi-threaded reads.
-- 
+
 ### kerchunk
 - Formerly known as `fsspec-reference-maker`.
 - A kind of virtual file-system for `fsspec`.
