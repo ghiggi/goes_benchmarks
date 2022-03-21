@@ -19,7 +19,7 @@ fname = "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c201932111400
 local_fpath = os.path.join(base_dir, "data", fname)
 
 
-ds = xr.open_dataset(local_fpath, chunks=chunks_dict)
+ds = xr.open_dataset(local_fpath)
 %timeit np.isnan(ds['Rad'].data).compute()
 
 ds['Rad'].is_finite()
