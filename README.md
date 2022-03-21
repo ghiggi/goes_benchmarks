@@ -3,16 +3,16 @@
 This repository aims at evaluating the performance of various approaches to read GOES16 data into xarray Datasets.
 The following reading option are evaluated: 
 - Local (Numpy vs. Dask) 
-- HTTPS + bytesIO (Numpy vs. Dask)
-- kerchunk-reference file (Numpy vs. Dask)
+- HTTPS using io.bytesIO (Numpy vs. Dask)
+- HTTPS using ffspec (Numpy vs. Dask)
+- S3 using ffspec (Numpy vs. Dask)
+- S3 using kerchunk-reference file (Numpy vs. Dask)
+- S3 download & remove (Numpy vs. Dask)
 - netCDF4 mode=byte requests (Dask)
-- HTTPS via ffspec (Numpy vs. Dask)
-- S3 via ffspec (Numpy vs. Dask)
-- S3 Download & Remove (Numpy vs. Dask)
 
 # Dataset characteristics
 
-Some initial considerations on datasets chunks
+Some initial considerations on GOES16 datasets chunks:
 
 | Sector    | CHUNK SHAPE | CHUNK MEMORY (float32) | CHUNK DISK (int16)    |
 |-----------|-------------|------------------------|-----------------------|
@@ -27,7 +27,6 @@ GOES16 Full Disc array:
 | 500 m (C02) | (21696, 21696) | 1.75 GB                | 9216     |
 | 1 km        | (10848,10848)  | 449 MB                 | 2304     |
 | 2 km        | (5424, 5424)   | 112 MB                 | 576      |
-
 
 GOES16 CONUS array:
 
