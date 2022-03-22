@@ -3,6 +3,7 @@
 This repository aims at evaluating the performance of various approaches to read GOES16 data into xarray Datasets.
 The following reading option are evaluated: 
 - Local (Numpy vs. Dask) 
+- Download with fs.get and os.remove (Numpy vs. Dask)
 - HTTPS using io.bytesIO (Numpy vs. Dask)
 - HTTPS using ffspec (Numpy vs. Dask)
 - S3 using ffspec (Numpy vs. Dask)
@@ -41,39 +42,59 @@ Full Disc arrays have 21 % of pixels of unvalid (nan) pixels.
 
 # Results 
 
+Here we report the elapsed time in seconds with min/mean/max over > 10 tries.
+
+Dask chunks are set to (226 * 2, 226 * 2) for ReadChunk_C01 and ReadQuarterDisc_C01 . 
+ReadFullDisc_C01 uses Dask chunks of (226 * 6, 226 * 6)
+
 Sorted by elapsed time (in seconds) when reading Full Disc
 
-|                           | ReadFullDisc_C01 | ReadChunk_C01  |
-|---------------------------|------------------|----------------|
-| Local (Dask)              | 2.28 +/- 0.0     | 1.57 +/- 0.24  |
-| Local (Numpy)             | 3.5 +/- 0.5      | 0.89 +/- 0.08  |
-| Download & Remove (Dask)  | 4.38 +/- 0.14    | 3.38 +/- 0.3   |
-| Download & Remove (Numpy) | 4.42 +/- 0.26    | 1.86 +/- 0.02  |
-| HTTPS + bytesIO (Numpy)   | 5.66 +/- 0.32    | 4.55 +/- 0.28  |
-| S3 + FSSPEC (Dask)        | 15.5 +/- 0.36    | 13.71 +/- 0.5  |
-| HTTPS + FSSPEC (Dask)     | 15.52 +/- 1.12   | 13.55 +/- 0.72 |
-| HTTPS + FSSPEC (Numpy)    | 19.11 +/- 0.94   | 6.7 +/- 0.34   |
-| S3 + FSSPEC (Numpy)       | 19.42 +/- 0.84   | 6.9 +/- 0.24   |
-| Kerchunk (Dask)           | 28.25 +/- 0.26   | 0.56 +/- 0.12  |
-| Kerchunk (Numpy)          | 265.77 +/- 4.58  | 1.46 +/- 0.84  |
-| netCDF #mode=bytes (Dask) | 278.13 +/- 1.6   | 278.8 +/- 2.0  |
+|                           | ReadFullDisc_C01     | ReadChunk_C01     | ReadQuarterDisc_C01   |
+|---------------------------|----------------------|-------------------|-----------------------|
+| Local (Dask)              | 2.28/2.35/2.45       | 1.43/1.61/1.74    | 1.77/1.85/1.96        |
+| Local (Numpy)             | 2.62/2.99/3.85       | 0.57/59.17/937.12 | 1.07/1.2/1.58         |
+| Download & Remove (Numpy) | 4.18/4.5/6.08        | 1.78/1.91/2.36    | 2.28/3.27/11.11       |
+| Download & Remove (Dask)  | 4.13/4.66/9.86       | 3.19/3.47/3.9     | 3.58/5.88/31.27       |
+| HTTPS + bytesIO (Numpy)   | 5.4/5.65/5.93        | 4.35/4.59/4.88    | 4.64/4.77/4.9         |
+| S3 + FSSPEC (Dask)        | 14.9/15.79/17.87     | 13.37/14.32/17.61 | 13.3/17.75/43.07      |
+| HTTPS + FSSPEC (Dask)     | 14.98/16.25/22.21    | 13.07/14.74/23.24 | 13.6/14.05/15.07      |
+| S3 + FSSPEC (Numpy)       | 18.27/20.02/23.51    | 6.59/7.11/7.92    | 9.35/10.3/12.22       |
+| HTTPS + FSSPEC (Numpy)    | 18.48/21.76/56.3     | 6.51/6.91/7.37    | 9.5/10.04/12.0        |
+| Kerchunk (Dask)           | 28.07/29.39/30.7     | 0.47/0.63/0.84    | 7.29/7.71/8.84        |
+| Kerchunk (Numpy)          | 263.54/265.77/268.92 | 1.15/1.28/2.05    | 64.28/66.54/70.88     |
+| netCDF #mode=bytes (Dask) | 276.99/278.13/278.74 | nan               | nan                   |
 
 Sorted by elapsed time (in seconds) when reading a single chunk (226,226)
 
-|                           | ReadFullDisc_C01 | ReadChunk_C01  |
-|---------------------------|------------------|----------------|
-| Kerchunk (Dask)           | 28.25 +/- 0.26   | 0.56 +/- 0.12  |
-| Local (Numpy)             | 3.5 +/- 0.5      | 0.89 +/- 0.08  |
-| Kerchunk (Numpy)          | 265.77 +/- 4.58  | 1.46 +/- 0.84  |
-| Local (Dask)              | 2.28 +/- 0.0     | 1.57 +/- 0.24  |
-| Download & Remove (Numpy) | 4.42 +/- 0.26    | 1.86 +/- 0.02  |
-| Download & Remove (Dask)  | 4.38 +/- 0.14    | 3.38 +/- 0.3   |
-| HTTPS + bytesIO (Numpy)   | 5.66 +/- 0.32    | 4.55 +/- 0.28  |
-| HTTPS + FSSPEC (Numpy)    | 19.11 +/- 0.94   | 6.7 +/- 0.34   |
-| S3 + FSSPEC (Numpy)       | 19.42 +/- 0.84   | 6.9 +/- 0.24   |
-| HTTPS + FSSPEC (Dask)     | 15.52 +/- 1.12   | 13.55 +/- 0.72 |
-| S3 + FSSPEC (Dask)        | 15.5 +/- 0.36    | 13.71 +/- 0.5  |
-| netCDF #mode=bytes (Dask) | 278.13 +/- 1.6   | 278.8 +/- 2.0  |
+|                           | ReadFullDisc_C01     | ReadChunk_C01     | ReadQuarterDisc_C01   |
+|---------------------------|----------------------|-------------------|-----------------------|
+| Kerchunk (Dask)           | 28.07/29.39/30.7     | 0.47/0.63/0.84    | 7.29/7.71/8.84        |
+| Kerchunk (Numpy)          | 263.54/265.77/268.92 | 1.15/1.28/2.05    | 64.28/66.54/70.88     |
+| Local (Dask)              | 2.28/2.35/2.45       | 1.43/1.61/1.74    | 1.77/1.85/1.96        |
+| Download & Remove (Numpy) | 4.18/4.5/6.08        | 1.78/1.91/2.36    | 2.28/3.27/11.11       |
+| Download & Remove (Dask)  | 4.13/4.66/9.86       | 3.19/3.47/3.9     | 3.58/5.88/31.27       |
+| HTTPS + bytesIO (Numpy)   | 5.4/5.65/5.93        | 4.35/4.59/4.88    | 4.64/4.77/4.9         |
+| HTTPS + FSSPEC (Numpy)    | 18.48/21.76/56.3     | 6.51/6.91/7.37    | 9.5/10.04/12.0        |
+| S3 + FSSPEC (Numpy)       | 18.27/20.02/23.51    | 6.59/7.11/7.92    | 9.35/10.3/12.22       |
+| S3 + FSSPEC (Dask)        | 14.9/15.79/17.87     | 13.37/14.32/17.61 | 13.3/17.75/43.07      |
+| HTTPS + FSSPEC (Dask)     | 14.98/16.25/22.21    | 13.07/14.74/23.24 | 13.6/14.05/15.07      |
+| Local (Numpy)             | 2.62/2.99/3.85       | 0.57/59.17/937.12 | 1.07/1.2/1.58         |
+
+Sorted by elapsed time (in seconds) when reading 1/4 of Full Disc
+
+|                           | ReadFullDisc_C01     | ReadChunk_C01     | ReadQuarterDisc_C01   |
+|---------------------------|----------------------|-------------------|-----------------------|
+| Local (Numpy)             | 2.62/2.99/3.85       | 0.57/59.17/937.12 | 1.07/1.2/1.58         |
+| Local (Dask)              | 2.28/2.35/2.45       | 1.43/1.61/1.74    | 1.77/1.85/1.96        |
+| Download & Remove (Numpy) | 4.18/4.5/6.08        | 1.78/1.91/2.36    | 2.28/3.27/11.11       |
+| HTTPS + bytesIO (Numpy)   | 5.4/5.65/5.93        | 4.35/4.59/4.88    | 4.64/4.77/4.9         |
+| Download & Remove (Dask)  | 4.13/4.66/9.86       | 3.19/3.47/3.9     | 3.58/5.88/31.27       |
+| Kerchunk (Dask)           | 28.07/29.39/30.7     | 0.47/0.63/0.84    | 7.29/7.71/8.84        |
+| HTTPS + FSSPEC (Numpy)    | 18.48/21.76/56.3     | 6.51/6.91/7.37    | 9.5/10.04/12.0        |
+| S3 + FSSPEC (Numpy)       | 18.27/20.02/23.51    | 6.59/7.11/7.92    | 9.35/10.3/12.22       |
+| HTTPS + FSSPEC (Dask)     | 14.98/16.25/22.21    | 13.07/14.74/23.24 | 13.6/14.05/15.07      |
+| S3 + FSSPEC (Dask)        | 14.9/15.79/17.87     | 13.37/14.32/17.61 | 13.3/17.75/43.07      |
+| Kerchunk (Numpy)          | 263.54/265.77/268.92 | 1.15/1.28/2.05    | 64.28/66.54/70.88     |
 
 # Notes on NetCDF4/HDF5, Zarr and Kerchunk 
   
@@ -86,23 +107,23 @@ Sorted by elapsed time (in seconds) when reading a single chunk (226,226)
   2. s3 storage has significantly higher latency than traditional file systems.
 
 ### Zarr
-- was specifically designed to overcome NetCDF4/HDF5 issues.
+- Was specifically designed to overcome NetCDF4/HDF5 issues.
 - Metadata are stored in a single JSON object.
 - Each chunk is a separate object.
-- Enable unlimited file sizes and parallel writes/reads.
-- Avoid HDF5/netCDF4 library issues with python concurrent multi-threaded reads.
+- Enables unlimited file sizes and parallel writes/reads.
+- Avoids HDF5/netCDF4 library issues with python concurrent multi-threaded reads.
 
 ### kerchunk
 - Formerly known as `fsspec-reference-maker`.
 - A kind of virtual file-system for `fsspec`.
 - Enable to access the contents of binary files directly without the limitations of the package designed for that file type.
-- It derive a single metadata JSON file describing all chunk locations of a NetCDF4/HDF5 file.
-- It extract the internal references of a netCDF4/HDF5 file.
-- It enable to perform efficient byte-range requests.
+- It derives a single metadata JSON file describing all chunk locations of a NetCDF4/HDF5 file.
+- It extracts the internal references of a netCDF4/HDF5 file.
+- It enables to perform efficient byte-range requests.
 - The derived JSON metadata file can point directly to where the required data are, instead having to access all files to understand which are necessary.
 
 async  
-- It provide speed ups if:  
+- It provides speed ups if:  
     1. Multiple chunks are being read at once 
        ---> The dask partition (chunk size) is larger than the file chunksize by some factor 
     2. The latency/overhead of each request is a significant fraction of the overall time.
