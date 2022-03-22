@@ -44,7 +44,7 @@ Full Disc arrays have 21 % of pixels of unvalid (nan) pixels.
 
 Here we report the elapsed time in seconds with min/mean/max over > 10 tries.
 
-Dask chunks are set to (226*2, 226*2) for ReadChunk_C01 and ReadQuarterDisc_C01. 
+Dask chunks are set to (226 * 2, 226 * 2) for ReadChunk_C01 and ReadQuarterDisc_C01 . 
 ReadFullDisc_C01 uses Dask chunks of (226 * 6, 226 * 6)
 
 Sorted by elapsed time (in seconds) when reading Full Disc
