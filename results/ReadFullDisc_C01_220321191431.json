@@ -1,0 +1,12 @@
+{
+    "Local (Numpy)": 2.64,
+    "Local (Dask)": 2.44,
+    "HTTPS + bytesIO (Numpy)": 5.4,
+    "Kerchunk (Dask)": 30.7,
+    "HTTPS + FSSPEC (Numpy)": 20.57,
+    "HTTPS + FSSPEC (Dask)": 15.73,
+    "S3 + FSSPEC (Numpy)": 18.27,
+    "S3 + FSSPEC (Dask)": 14.9,
+    "Download & Remove (Numpy)": 4.4,
+    "Download & Remove (Dask)": 4.24
+}
