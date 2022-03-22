@@ -3,6 +3,7 @@
 This repository aims at evaluating the performance of various approaches to read GOES16 data into xarray Datasets.
 The following reading option are evaluated: 
 - Local (Numpy vs. Dask) 
+- Download with fs.get and os.remove (Numpy vs. Dask)
 - HTTPS using io.bytesIO (Numpy vs. Dask)
 - HTTPS using ffspec (Numpy vs. Dask)
 - S3 using ffspec (Numpy vs. Dask)
