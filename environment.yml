@@ -35,10 +35,10 @@ dependencies:
   - brotlipy=0.7.0=py39h3811e60_1003
   - bzip2=1.0.8=h7f98852_4
   - c-ares=1.18.1=h7f98852_0
-  - ca-certificates=2021.10.8=ha878542_0
+  - ca-certificates=2022.2.1=h06a4308_0
   - cached-property=1.5.2=hd8ed1ab_1
   - cached_property=1.5.2=pyha770c72_1
-  - certifi=2021.10.8=py39hf3d152e_1
+  - certifi=2021.10.8=py39h06a4308_2
   - cffi=1.15.0=py39h4bc2ebd_0
   - cftime=1.6.0=py39hd257fcd_0
   - chardet=4.0.0=py39hf3d152e_2
@@ -185,7 +185,7 @@ dependencies:
   - numpy=1.22.3=py39h18676bf_0
   - numpydoc=1.2=pyhd8ed1ab_0
   - openjpeg=2.4.0=hb52868f_1
-  - openssl=1.1.1l=h7f98852_0
+  - openssl=1.1.1n=h7f8727e_0
   - packaging=21.3=pyhd8ed1ab_0
   - pandas=1.4.1=py39hde0f152_0
   - pandoc=2.17.1.1=ha770c72_0
@@ -263,6 +263,7 @@ dependencies:
   - spyder-kernels=2.1.3=py39h06a4308_0
   - sqlite=3.37.0=h9cd32fc_0
   - stack_data=0.2.0=pyhd8ed1ab_0
+  - tabulate=0.8.9=py39h06a4308_0
   - tblib=1.7.0=pyhd8ed1ab_0
   - testpath=0.6.0=pyhd8ed1ab_0
   - text-unidecode=1.3=py_0
@@ -302,4 +303,5 @@ dependencies:
   - zipp=3.7.0=pyhd8ed1ab_1
   - zlib=1.2.11=h36c2ea0_1013
   - zstd=1.5.2=ha95c52a_0
-prefix: /home/ghiggi/anaconda3/envs/io_benchmark
+prefix: /home/ghiggi/.conda/envs/goes_benchmarks
+
