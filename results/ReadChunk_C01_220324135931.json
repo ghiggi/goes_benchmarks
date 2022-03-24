@@ -1,0 +1,19 @@
+{
+    "Local (Numpy)": 0.04,
+    "Local (Dask)": 1.52,
+    "HTTPS + bytesIO (Numpy)": 3.12,
+    "HTTPS + bytesIO (Dask)": 4.3,
+    "Kerchunk (Numpy)": 1.16,
+    "Kerchunk (Dask)": 0.61,
+    "netCDF #mode=bytes (Dask)": 283.15,
+    "HTTPS + FSSPEC (Numpy)": 6.33,
+    "HTTPS + FSSPEC (Dask)": 13.5,
+    "S3 + FSSPEC (Numpy)": 6.17,
+    "S3 + FSSPEC (Dask)": 13.64,
+    "S3 + FSSPEC + SIMPLECACHE (Numpy)": 0.14,
+    "S3 + FSSPEC + SIMPLECACHE (Dask)": 1.6,
+    "S3 + FSSPEC + BLOCKCACHE (Numpy)": 0.14,
+    "S3 + FSSPEC + BLOCKCACHE (Dask)": 1.6,
+    "Download & Remove (Numpy)": 1.84,
+    "Download & Remove (Dask)": 3.33
+}
