@@ -108,7 +108,7 @@ apply_custom_fun(ds)
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
-result_dict["HTTPS + bytesIO (Numpy)"] = t_elapsed
+result_dict["HTTPS + bytesIO (Dask)"] = t_elapsed
 print(t_elapsed)
 
 ####------------------------------------------------

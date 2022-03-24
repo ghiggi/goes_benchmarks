@@ -73,7 +73,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Local (Numpy)"] = t_elapsed
-print(t_elapsed)  # 3.2 - 3.7 s
+print(" - Local (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### Local (dask)
@@ -84,7 +84,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Local (Dask)"] = t_elapsed
-print(t_elapsed)  # 4.45 s
+print(" - Local (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (numpy)
@@ -97,7 +97,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + bytesIO (Numpy)"] = t_elapsed
-print(t_elapsed)  # 7.0 - 7.4 s
+print(" - HTTPS + bytesIO (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (dask)
@@ -112,8 +112,8 @@ apply_custom_fun(ds)
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
-result_dict["HTTPS + bytesIO (Numpy)"] = t_elapsed
-print(t_elapsed)  # 7.7 - 7.8 s
+result_dict["HTTPS + bytesIO (Dask)"] = t_elapsed
+print(" - HTTPS + bytesIO (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### Kerchunk (Numpy)
@@ -132,7 +132,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Kerchunk (Numpy)"] = t_elapsed
-print(t_elapsed)  # 12 s
+print(" - Kerchunk (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### Kerchunk (Dask)
@@ -151,7 +151,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Kerchunk (Dask)"] = t_elapsed
-print(t_elapsed)  # 36 s
+print(" - Kerchunk (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### nc mode byte  (dask)
@@ -164,7 +164,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["netCDF #mode=bytes (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - netCDF #mode=bytes (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Numpy)
@@ -176,7 +176,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + FSSPEC (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - HTTPS + FSSPEC (Numpy)" + f": {t_elapsed} s")  
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Dask)
@@ -188,7 +188,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + FSSPEC (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - HTTPS + FSSPEC (Dask)" + f": {t_elapsed} s")  
 
 ####------------------------------------------------
 #### S3 + fsspec (Numpy)
@@ -200,7 +200,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC (Numpy)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec (Dask)
@@ -212,7 +212,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC (Dask)"] = t_elapsed
-print(t_elapsed)  # 21-23 s
+print(" - S3 + FSSPEC (Dask)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec simplecache (Numpy)
@@ -236,7 +236,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + SIMPLECACHE (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC + SIMPLECACHE (Numpy)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec simplecache (Dask)
@@ -259,7 +259,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + SIMPLECACHE (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC + SIMPLECACHE (Dask)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec blockcache (Numpy)
@@ -283,7 +283,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC + BLOCKCACHE (Numpy)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec blockcache (Dask)
@@ -307,7 +307,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC + BLOCKCACHE (Dask)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### Download & Remove (Numpy)
@@ -321,7 +321,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Download & Remove (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - Download & Remove (Numpy)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### Download & Remove (Dask)
@@ -335,7 +335,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Download & Remove (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - Download & Remove (Dask)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### Write JSON
