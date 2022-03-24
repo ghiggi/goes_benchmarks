@@ -156,6 +156,7 @@ async
 
 # References
 The documentation listed here below has been used to design this benchmark and create the notes above.
+- https://github.com/pytroll/satpy/pull/1321
 - https://github.com/fsspec/kerchunk 
 - https://medium.com/pangeo/fake-it-until-you-make-it-reading-goes-netcdf4-data-on-aws-s3-as-zarr-for-rapid-data-access-61e33f8fe685
 - https://github.com/lsterzinger/fsspec-reference-maker-tutorial
