@@ -7,6 +7,8 @@ The following reading option are evaluated:
 - HTTPS using io.bytesIO (Numpy vs. Dask)
 - HTTPS using ffspec (Numpy vs. Dask)
 - S3 using ffspec (Numpy vs. Dask)
+- S3 using ffspec SimpleCache (Numpy vs. Dask)
+- S3 using ffspec BlockCache (Numpy vs. Dask)
 - S3 using kerchunk-reference file (Numpy vs. Dask)
 - S3 download & remove (Numpy vs. Dask)
 - netCDF4 mode=byte requests (Dask)
