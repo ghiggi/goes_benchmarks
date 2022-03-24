@@ -154,11 +154,6 @@ async
 
 - One consequence of the async capability is that there is less of a performance penalty for using smaller Zarr chunks. You still want to use Dask chunks   of ~100MB for large compute jobs. But the underlying file chunks on disk can be smaller.
 
- 
-# TODO
-- Identify best dask chunk granularity for retrievals 
-- Assess request latency 
-
 # References
 The documentation listed here below has been used to design this benchmark and create the notes above.
 - https://github.com/fsspec/kerchunk 
