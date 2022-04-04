@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 15 15:12:48 2022
+Created on Mon Apr  4 10:58:05 2022
 
 @author: ghiggi
 """
@@ -10,52 +10,53 @@ Created on Tue Mar 15 15:12:48 2022
 ###################
 import os
 import json
+import shutil
 import datetime
 import fsspec
 import time
 import appdirs
 import requests
-import fsspec.implementations.cached
-
 # import netCDF4
 # import h5netcdf
 import numpy as np
 import xarray as xr
 from io import BytesIO
+from fsspec.implementations.cached import CachingFileSystem, SimpleCacheFileSystem
 
 # Define directory where saving results
 # base_dir = "/home/ghiggi/Projects/goes_benchmarks/"
 # base_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/"
 base_dir = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
-results_dir = os.path.join(base_dir, "results")
+reference_dir = os.path.join(base_dir, "gcs_reference")
+results_dir = os.path.join(base_dir, "gcs_results")
 data_dir = os.path.join(base_dir, "data")
 
 # Define filepaths
 fname = "OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
 local_fpath = os.path.join(data_dir, fname)
-reference_fpath = os.path.join(data_dir, fname + ".json")
+reference_fpath = os.path.join(reference_dir, fname + ".json")
 tmp_fpath = os.path.join("/tmp", fname)
 
-http_fpath = "https://noaa-goes16.s3.amazonaws.com/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
-nc_mode_fpath = "https://noaa-goes16.s3.amazonaws.com/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc#mode=bytes"
-s3_fpath = "s3://noaa-goes16/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
+http_fpath = "https://storage.googleapis.com/gcp-public-data-goes-16/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
+nc_mode_fpath = "https://storage.googleapis.com/gcp-public-data-goes-16/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc#mode=bytes"
+gcs_fpath = "gs://gcp-public-data-goes-16/ABI-L1b-RadF/2019/321/11/OR_ABI-L1b-RadF-M6C01_G16_s20193211130282_e20193211139590_c20193211140047.nc"
+
+protocol = "gcs"
+storage_options = {"token": 'anon'}
+cache_expiry_time = 60
+block_size = 2**20
 
 # Define experiment name
-exp_name = "ReadQuarterDisc_C01"
+exp_name = "ReadChunk_C01"
 
 # -----------------------------------
 # Define dask chunking
-chunks_dict = {"Rad": (226 * 12, 226 * 12)}  # 4 dask task to open 5424*5424 array
+chunks_dict = {"Rad": (226, 226)}
 
 # Define custom operation
 def apply_custom_fun(ds):
-    shape = ds["Rad"].shape
-    half_da = ds["Rad"].isel(
-        y=slice(0, int(shape[0] / 2)), x=slice(0, int(shape[1] / 2))
-    )
-    dummy = np.asarray(half_da.data)
+    dummy = np.asarray(ds["Rad"].isel(y=slice(0, 226), x=slice(0, 226)).data)
     return None
-
 
 # Define filename where saving results
 current_time = datetime.datetime.now().strftime("%y%m%d%H%M%S")
@@ -73,7 +74,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Local (Numpy)"] = t_elapsed
-print(" - Local (Numpy)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Local (dask)
@@ -84,20 +85,20 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Local (Dask)"] = t_elapsed
-print(" - Local (Dask)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (numpy)
 t_i = time.time()
 resp = requests.get(http_fpath)
 f_obj = BytesIO(resp.content)
-ds = xr.open_dataset(f_obj)
+ds = xr.open_dataset(f_obj, engine="h5netcdf")
 apply_custom_fun(ds)
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + bytesIO (Numpy)"] = t_elapsed
-print(" - HTTPS + bytesIO (Numpy)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (dask)
@@ -113,7 +114,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + bytesIO (Dask)"] = t_elapsed
-print(" - HTTPS + bytesIO (Dask)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Kerchunk (Numpy)
@@ -121,8 +122,8 @@ t_i = time.time()
 fs = fsspec.filesystem(
     "reference",
     fo=reference_fpath,
-    remote_protocol="s3",
-    remote_options={"anon": True},
+    remote_protocol=protocol,
+    remote_options=storage_options,
     skip_instance_cache=True,
 )
 m = fs.get_mapper("")
@@ -132,7 +133,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Kerchunk (Numpy)"] = t_elapsed
-print(" - Kerchunk (Numpy)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Kerchunk (Dask)
@@ -140,8 +141,8 @@ t_i = time.time()
 fs = fsspec.filesystem(
     "reference",
     fo=reference_fpath,
-    remote_protocol="s3",
-    remote_options={"anon": True},
+    remote_protocol=protocol,
+    remote_options=storage_options,
     skip_instance_cache=True,
 )
 m = fs.get_mapper("")
@@ -151,7 +152,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Kerchunk (Dask)"] = t_elapsed
-print(" - Kerchunk (Dask)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### nc mode byte  (dask)
@@ -164,7 +165,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["netCDF #mode=bytes (Dask)"] = t_elapsed
-print(" - netCDF #mode=bytes (Dask)" + f": {t_elapsed} s") 
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Numpy)
@@ -176,7 +177,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + FSSPEC (Numpy)"] = t_elapsed
-print(" - HTTPS + FSSPEC (Numpy)" + f": {t_elapsed} s")  
+print(t_elapsed)
 
 ####------------------------------------------------
 #### HTTPS + ffspec (Dask)
@@ -188,46 +189,44 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + FSSPEC (Dask)"] = t_elapsed
-print(" - HTTPS + FSSPEC (Dask)" + f": {t_elapsed} s")  
+print(t_elapsed)
 
 ####------------------------------------------------
-#### S3 + fsspec (Numpy)
+#### GCS + fsspec (Numpy)
 t_i = time.time()
-fs = fsspec.filesystem("s3", anon=True)
-ds = xr.open_dataset(fs.open(s3_fpath), engine="h5netcdf")
+fs = fsspec.filesystem(protocol, **storage_options)
+ds = xr.open_dataset(fs.open(gcs_fpath), engine="h5netcdf")
 apply_custom_fun(ds)
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC (Numpy)"] = t_elapsed
-print(" - S3 + FSSPEC (Numpy)" + f": {t_elapsed} s")
+result_dict["GCS + FSSPEC (Numpy)"] = t_elapsed
+print(t_elapsed)
 
 ####------------------------------------------------
-#### S3 + fsspec (Dask)
+#### GCS + fsspec (Dask)
 t_i = time.time()
-fs = fsspec.filesystem("s3", anon=True)
-ds = xr.open_dataset(fs.open(s3_fpath), engine="h5netcdf", chunks=chunks_dict)
+fs = fsspec.filesystem(protocol, **storage_options)
+ds = xr.open_dataset(fs.open(gcs_fpath), engine="h5netcdf", chunks=chunks_dict)
 apply_custom_fun(ds)
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC (Dask)"] = t_elapsed
-print(" - S3 + FSSPEC (Dask)" + f": {t_elapsed} s")
+result_dict["GCS + FSSPEC (Dask)"] = t_elapsed
+print(t_elapsed)
 
 ####------------------------------------------------
-#### S3 + fsspec simplecache (Numpy)
+#### GCS + fsspec simplecache (Numpy)
 t_i = time.time()
 cachedir = appdirs.user_cache_dir("ABI-simple-cache-numpy")
-storage_options = {"anon": True}
-fs_s3 = fsspec.filesystem(protocol="s3", **storage_options)
-fs_simple = fsspec.implementations.cached.SimpleCacheFileSystem(
-    fs=fs_s3,
+fs_gcs = fsspec.filesystem(protocol=protocol, **storage_options)
+fs_simple = SimpleCacheFileSystem(
+    fs=fs_gcs,
     cache_storage=cachedir,
-    check_files=False,
-    expiry_times=60 * 2,  # to avoid cached file on next benchmark run,
+    expiry_time=cache_expiry_time,  
     same_names=True,
 )
-with fs_simple.open(s3_fpath) as f:
+with fs_simple.open(gcs_fpath) as f:
     ds = xr.open_dataset(f, engine="h5netcdf")
     apply_custom_fun(ds)
 
@@ -235,85 +234,83 @@ del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + SIMPLECACHE (Numpy)"] = t_elapsed
-print(" - S3 + FSSPEC + SIMPLECACHE (Numpy)" + f": {t_elapsed} s")
+result_dict["GCS + FSSPEC + SIMPLECACHE (Numpy)"] = t_elapsed
+print(t_elapsed)
+
+shutil.rmtree(cachedir)
 
 ####------------------------------------------------
-#### S3 + fsspec simplecache (Dask)
+#### GCS + fsspec simplecache (Dask)
 t_i = time.time()
 cachedir = appdirs.user_cache_dir("ABI-simple-cache-dask")
-storage_options = {"anon": True}
-fs_s3 = fsspec.filesystem(protocol="s3", **storage_options)
-fs_simple = fsspec.implementations.cached.SimpleCacheFileSystem(
-    fs=fs_s3,
+fs_gcs = fsspec.filesystem(protocol=protocol, **storage_options)
+fs_simple = SimpleCacheFileSystem(
+    fs=fs_gcs,
     cache_storage=cachedir,
-    check_files=False,
-    expiry_times=60 * 2,  # to avoid cached file on next benchmark run,
+    expiry_time=cache_expiry_time, 
     same_names=True,
 )
-with fs_simple.open(s3_fpath) as f:
+with fs_simple.open(gcs_fpath) as f:
     ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
     apply_custom_fun(ds)
 del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + SIMPLECACHE (Dask)"] = t_elapsed
-print(" - S3 + FSSPEC + SIMPLECACHE (Dask)" + f": {t_elapsed} s")
+result_dict["GCS + FSSPEC + SIMPLECACHE (Dask)"] = t_elapsed
+print(t_elapsed)
+
+shutil.rmtree(cachedir)
 
 ####------------------------------------------------
-#### S3 + fsspec blockcache (Numpy)
-t_i = time.time()
-cachedir = appdirs.user_cache_dir("ABI-block-cache-numpy")
-storage_options = {"anon": True}
-fs_s3 = fsspec.filesystem(protocol="s3", **storage_options)
-fs_block = fsspec.implementations.cached.CachingFileSystem(
-    fs=fs_s3,
-    cache_storage=cachedir,
-    cache_check=600,
-    check_files=False,
-    expiry_times=60 * 2,  # to avoid cached file on next benchmark run
-    same_names=False,
-)
-with fs_block.open(s3_fpath, block_size=2**20) as f:
-    ds = xr.open_dataset(f, engine="h5netcdf")
-    apply_custom_fun(ds)
-del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
-t_f = time.time()
+#### GCS + fsspec blockcache (Numpy)
+# t_i = time.time()
+# cachedir = appdirs.user_cache_dir("ABI-block-cache-numpy")
+# fs_gcs = fsspec.filesystem(protocol=protocol, **storage_options)
+# fs_block = CachingFileSystem(
+#     fs=fs_gcs,
+#     cache_storage=cachedir,
+#     expiry_time=cache_expiry_time,  
+# )
+# with fs_block.open(gcs_fpath, block_size=block_size) as f:
+#     ds = xr.open_dataset(f, engine="h5netcdf")
+#     apply_custom_fun(ds)
+# del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+# t_f = time.time()
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
-print(" - S3 + FSSPEC + BLOCKCACHE (Numpy)" + f": {t_elapsed} s")
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict["GCS + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
+# print(t_elapsed)
 
-####------------------------------------------------
-#### S3 + fsspec blockcache (Dask)
-t_i = time.time()
-cachedir = appdirs.user_cache_dir("ABI-block-cache-dask")
-storage_options = {"anon": True}
-fs_s3 = fsspec.filesystem(protocol="s3", **storage_options)
-fs_block = fsspec.implementations.cached.CachingFileSystem(
-    fs=fs_s3,
-    cache_storage=cachedir,
-    cache_check=600,
-    check_files=False,
-    expiry_times=60 * 2,  # to avoid cached file on next benchmark run
-    same_names=False,
-)
-with fs_block.open(s3_fpath, block_size=2**20) as f:
-    ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
-    apply_custom_fun(ds)
-del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
-t_f = time.time()
+# shutil.rmtree(cachedir)
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
-print(" - S3 + FSSPEC + BLOCKCACHE (Dask)" + f": {t_elapsed} s")
+# ####------------------------------------------------
+# #### GCS + fsspec blockcache (Dask)
+# t_i = time.time()
+# cachedir = appdirs.user_cache_dir("ABI-block-cache-dask")
+# fs_gcs = fsspec.filesystem(protocol=protocol, **storage_options)
+# fs_block = CachingFileSystem(
+#     fs=fs_gcs,
+#     cache_storage=cachedir,
+#     expiry_time=cache_expiry_time, 
+# )
+# with fs_block.open(gcs_fpath, block_size=block_size) as f:
+#     ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
+#     apply_custom_fun(ds)
+# del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+# t_f = time.time()
+
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict["GCS + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
+# print(t_elapsed)
+
+# shutil.rmtree(cachedir)
 
 ####------------------------------------------------
 #### Download & Remove (Numpy)
 t_i = time.time()
-fs = fsspec.filesystem("s3", anon=True)
-fs.get(s3_fpath, tmp_fpath)
+fs = fsspec.filesystem(protocol, **storage_options)
+fs.get(gcs_fpath, tmp_fpath)
 ds = xr.open_dataset(tmp_fpath)
 apply_custom_fun(ds)
 os.remove(tmp_fpath)
@@ -321,13 +318,13 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Download & Remove (Numpy)"] = t_elapsed
-print(" - Download & Remove (Numpy)" + f": {t_elapsed} s")
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Download & Remove (Dask)
 t_i = time.time()
-fs = fsspec.filesystem("s3", anon=True)
-fs.get(s3_fpath, tmp_fpath)
+fs = fsspec.filesystem(protocol, **storage_options)
+fs.get(gcs_fpath, tmp_fpath)
 ds = xr.open_dataset(tmp_fpath, chunks=chunks_dict)
 apply_custom_fun(ds)
 os.remove(tmp_fpath)
@@ -335,7 +332,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Download & Remove (Dask)"] = t_elapsed
-print(" - Download & Remove (Dask)" + f": {t_elapsed} s")
+print(t_elapsed)
 
 ####------------------------------------------------
 #### Write JSON
