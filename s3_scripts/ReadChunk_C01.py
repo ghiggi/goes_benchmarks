@@ -74,7 +74,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Local (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - Local (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### Local (dask)
@@ -85,7 +85,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Local (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - Local (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (numpy)
@@ -98,7 +98,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + bytesIO (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - HTTPS + bytesIO (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + bytesIO (dask)
@@ -114,7 +114,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + bytesIO (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - HTTPS + bytesIO (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### Kerchunk (Numpy)
@@ -133,7 +133,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Kerchunk (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - Kerchunk (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### Kerchunk (Dask)
@@ -152,7 +152,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Kerchunk (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - Kerchunk (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### nc mode byte  (dask)
@@ -165,7 +165,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["netCDF #mode=bytes (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - netCDF #mode=bytes (Dask)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + fsspec (Numpy)
@@ -177,7 +177,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + FSSPEC (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - HTTPS + FSSPEC (Numpy)" + f": {t_elapsed} s") 
 
 ####------------------------------------------------
 #### HTTPS + fsspec (Dask)
@@ -189,7 +189,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["HTTPS + FSSPEC (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - HTTPS + FSSPEC (Dask)" + f": {t_elapsed} s")  
 
 ####------------------------------------------------
 #### S3 + fsspec (Numpy)
@@ -201,7 +201,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC (Numpy)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec (Dask)
@@ -213,7 +213,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC (Dask)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### S3 + fsspec simplecache (Numpy)
@@ -230,14 +230,15 @@ with fs_simple.open(s3_fpath) as f:
     ds = xr.open_dataset(f, engine="h5netcdf")
     apply_custom_fun(ds)
 
-del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+del ds, f, fs_simple, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + SIMPLECACHE (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC + SIMPLECACHE (Numpy)" + f": {t_elapsed} s")
 
 shutil.rmtree(cachedir)
+time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### S3 + fsspec simplecache (Dask)
@@ -253,58 +254,61 @@ fs_simple = SimpleCacheFileSystem(
 with fs_simple.open(s3_fpath) as f:
     ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
     apply_custom_fun(ds)
-del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+del ds, f, fs_simple, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
 t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + SIMPLECACHE (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - S3 + FSSPEC + SIMPLECACHE (Dask)" + f": {t_elapsed} s")
 
 shutil.rmtree(cachedir)
+time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### S3 + fsspec blockcache (Numpy)
-t_i = time.time()
-cachedir = appdirs.user_cache_dir("ABI-block-cache-numpy")
-fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
-fs_block = CachingFileSystem(
-    fs=fs_s3,
-    cache_storage=cachedir,
-    expiry_time=cache_expiry_times,
-)
-with fs_block.open(s3_fpath, block_size=block_size) as f:
-    ds = xr.open_dataset(f, engine="h5netcdf")
-    apply_custom_fun(ds)
-del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
-t_f = time.time()
+# t_i = time.time()
+# cachedir = appdirs.user_cache_dir("ABI-block-cache-numpy")
+# fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
+# fs_block = CachingFileSystem(
+#     fs=fs_s3,
+#     cache_storage=cachedir,
+#     expiry_time=cache_expiry_times,
+# )
+# with fs_block.open(s3_fpath, block_size=block_size) as f:
+#     ds = xr.open_dataset(f, engine="h5netcdf")
+#     apply_custom_fun(ds)
+# del ds, f, fs_block, fs_s3   # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !    
+# t_f = time.time()
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
-print(t_elapsed)
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict["S3 + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
+# print(" - S3 + FSSPEC + BLOCKCACHE (Numpy)" + f": {t_elapsed} s")
 
-shutil.rmtree(cachedir)
+# shutil.rmtree(cachedir)
+# time.sleep(2) # to avoid problems ... 
 
-####------------------------------------------------
-#### S3 + fsspec blockcache (Dask)
-t_i = time.time()
-cachedir = appdirs.user_cache_dir("ABI-block-cache-dask")
-fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
-fs_block = CachingFileSystem(
-    fs=fs_s3,
-    cache_storage=cachedir,
-    expiry_time=cache_expiry_times,
-)
-with fs_block.open(s3_fpath, block_size=block_size) as f:
-    ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
-    apply_custom_fun(ds)
-del ds, f  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
-t_f = time.time()
+# ####------------------------------------------------
+# #### S3 + fsspec blockcache (Dask)
+# t_i = time.time()
+# cachedir = appdirs.user_cache_dir("ABI-block-cache-dask")
+# fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
+# fs_block = CachingFileSystem(
+#     fs=fs_s3,
+#     cache_storage=cachedir,
+#     expiry_time=cache_expiry_times,
+# )
+# with fs_block.open(s3_fpath, block_size=block_size) as f:
+#     ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
+#     apply_custom_fun(ds)
+# del ds, f, fs_block, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+# t_f = time.time()
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
-print(t_elapsed)
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict["S3 + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
+# print(" - S3 + FSSPEC + BLOCKCACHE (Dask)" + f": {t_elapsed} s")
 
-shutil.rmtree(cachedir)
+# shutil.rmtree(cachedir)
+# time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### Download & Remove (Numpy)
@@ -318,7 +322,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Download & Remove (Numpy)"] = t_elapsed
-print(t_elapsed)
+print(" - Download & Remove (Numpy)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### Download & Remove (Dask)
@@ -332,7 +336,7 @@ t_f = time.time()
 
 t_elapsed = round(t_f - t_i, 2)
 result_dict["Download & Remove (Dask)"] = t_elapsed
-print(t_elapsed)
+print(" - Download & Remove (Dask)" + f": {t_elapsed} s")
 
 ####------------------------------------------------
 #### Write JSON

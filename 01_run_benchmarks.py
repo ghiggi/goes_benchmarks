@@ -16,7 +16,7 @@ current_dir = os.path.dirname(os.path.realpath(__file__))
 
 # Run S3 benchmarks 
 python_benchmark_fpaths = [os.path.join(current_dir, "s3_scripts", fname) for fname in python_benchmark_fnames]
-n_repeat = 1 # 10
+n_repeat = 10
 for python_fpath in python_benchmark_fpaths:
     print("Profiling : ", python_fpath)
     for i in range(0, n_repeat):
@@ -26,7 +26,7 @@ for python_fpath in python_benchmark_fpaths:
         
 # Run GCS benchmarks 
 python_benchmark_fpaths = [os.path.join(current_dir, "gcs_scripts", fname) for fname in python_benchmark_fnames]
-n_repeat = 1 # 10
+n_repeat = 10
 for python_fpath in python_benchmark_fpaths:
     print("Profiling : ", python_fpath)
     for i in range(0, n_repeat):

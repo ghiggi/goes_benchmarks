@@ -245,6 +245,7 @@ result_dict["GCS + FSSPEC + SIMPLECACHE (Numpy)"] = t_elapsed
 print(" - GCS + FSSPEC + SIMPLECACHE (Numpy)" + f": {t_elapsed} s")
 
 shutil.rmtree(cachedir)
+time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### GCS + fsspec simplecache (Dask)
@@ -268,6 +269,7 @@ result_dict["GCS + FSSPEC + SIMPLECACHE (Dask)"] = t_elapsed
 print(" - GCS + FSSPEC + SIMPLECACHE (Dask)" + f": {t_elapsed} s")
 
 shutil.rmtree(cachedir)
+time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### GCS + fsspec blockcache (Numpy)
@@ -291,6 +293,7 @@ shutil.rmtree(cachedir)
 # print(" - GCS + FSSPEC + BLOCKCACHE (Numpy)" + f": {t_elapsed} s")
 
 # shutil.rmtree(cachedir)
+# time.sleep(2) # to avoid problems ... 
 
 # ####------------------------------------------------
 # #### GCS + fsspec blockcache (Dask)
@@ -313,6 +316,7 @@ shutil.rmtree(cachedir)
 # print(" - GCS + FSSPEC + BLOCKCACHE (Dask)" + f": {t_elapsed} s")
 
 # shutil.rmtree(cachedir)
+# time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### Download & Remove (Numpy)

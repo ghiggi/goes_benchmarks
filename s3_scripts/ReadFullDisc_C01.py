@@ -237,6 +237,9 @@ t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + SIMPLECACHE (Numpy)"] = t_elapsed
 print(" - S3 + FSSPEC + SIMPLECACHE (Numpy)" + f": {t_elapsed} s")
 
+shutil.rmtree(cachedir)
+time.sleep(2) # to avoid problems ... 
+
 ####------------------------------------------------
 #### S3 + fsspec simplecache (Dask)
 t_i = time.time()
@@ -258,46 +261,56 @@ t_elapsed = round(t_f - t_i, 2)
 result_dict["S3 + FSSPEC + SIMPLECACHE (Dask)"] = t_elapsed
 print(" - S3 + FSSPEC + SIMPLECACHE (Dask)" + f": {t_elapsed} s")
 
-####------------------------------------------------
-#### S3 + fsspec blockcache (Numpy)
-t_i = time.time()
-cachedir = appdirs.user_cache_dir("ABI-block-cache-numpy")
-fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
-fs_block = CachingFileSystem(
-    fs=fs_s3,
-    cache_storage=cachedir,
-    expiry_time=cache_expiry_times,   
-)
-with fs_block.open(s3_fpath, block_size=block_size) as f:
-    ds = xr.open_dataset(f, engine="h5netcdf")
-    apply_custom_fun(ds)
-
-del ds, f, fs_block, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
-t_f = time.time()
-
-t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
-print(" - S3 + FSSPEC + BLOCKCACHE (Numpy)" + f": {t_elapsed} s")
+shutil.rmtree(cachedir)
+time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
-#### S3 + fsspec blockcache (Dask)
-t_i = time.time()
-cachedir = appdirs.user_cache_dir("ABI-block-cache-dask")
-fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
-fs_block = CachingFileSystem(
-    fs=fs_s3,
-    cache_storage=cachedir,
-    expiry_time=cache_expiry_times,   
-)
-with fs_block.open(s3_fpath, block_size=block_size) as f:
-    ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
-    apply_custom_fun(ds)
-del ds, f, fs_block, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
-t_f = time.time()
+# #### S3 + fsspec blockcache (Numpy)
+# t_i = time.time()
+# cachedir = appdirs.user_cache_dir("ABI-block-cache-numpy")
+# fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
+# fs_block = CachingFileSystem(
+#     fs=fs_s3,
+#     cache_storage=cachedir,
+#     expiry_time=cache_expiry_times,   
+# )
+# with fs_block.open(s3_fpath, block_size=block_size) as f:
+#     ds = xr.open_dataset(f, engine="h5netcdf")
+#     apply_custom_fun(ds)
 
-t_elapsed = round(t_f - t_i, 2)
-result_dict["S3 + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
-print(" - S3 + FSSPEC + BLOCKCACHE (Dask)" + f": {t_elapsed} s")
+# del ds, f, fs_block, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+# t_f = time.time()
+
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict["S3 + FSSPEC + BLOCKCACHE (Numpy)"] = t_elapsed
+# print(" - S3 + FSSPEC + BLOCKCACHE (Numpy)" + f": {t_elapsed} s")
+
+# shutil.rmtree(cachedir)
+# time.sleep(2) # to avoid problems ... 
+
+# ####------------------------------------------------
+# #### S3 + fsspec blockcache (Dask)
+# t_i = time.time()
+# cachedir = appdirs.user_cache_dir("ABI-block-cache-dask")
+# fs_s3 = fsspec.filesystem(protocol=protocol, **storage_options)
+# fs_block = CachingFileSystem(
+#     fs=fs_s3,
+#     cache_storage=cachedir,
+#     expiry_time=cache_expiry_times,   
+# )
+# with fs_block.open(s3_fpath, block_size=block_size) as f:
+#     ds = xr.open_dataset(f, engine="h5netcdf", chunks=chunks_dict)
+#     apply_custom_fun(ds)
+    
+# del ds, f, fs_block, fs_s3  # GOOD PRACTICE TO REMOVE, SINCE CONNECTION HAS BEEN CLOSED !
+# t_f = time.time()
+
+# t_elapsed = round(t_f - t_i, 2)
+# result_dict["S3 + FSSPEC + BLOCKCACHE (Dask)"] = t_elapsed
+# print(" - S3 + FSSPEC + BLOCKCACHE (Dask)" + f": {t_elapsed} s")
+
+# shutil.rmtree(cachedir)
+# time.sleep(2) # to avoid problems ... 
 
 ####------------------------------------------------
 #### Download & Remove (Numpy)

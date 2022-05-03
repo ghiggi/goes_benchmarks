@@ -16,8 +16,8 @@ results_dir = "/home/ghiggi/Projects/goes_benchmarks/results/"
 # results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/results/"
 
 patterns = ["ReadFullDisc_C01", 
-            "ReadChunk_C01", 
             "ReadQuarterDisc_C01",
+            "ReadChunk_C01", 
 ]
 global_dict = {}
 global_dict_str = {}
