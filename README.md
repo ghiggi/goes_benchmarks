@@ -3,14 +3,13 @@
 This repository aims at evaluating the performance of various approaches to read GOES16 data into xarray Datasets.
 The following reading option are evaluated: 
 - Local (Numpy vs. Dask) 
-- Download with fs.get and os.remove (Numpy vs. Dask)
+- Download with ffspec fs.get and os.remove (Numpy vs. Dask)
 - HTTPS using io.bytesIO (Numpy vs. Dask)
 - HTTPS using ffspec (Numpy vs. Dask)
-- S3 using ffspec (Numpy vs. Dask)
-- S3 using ffspec SimpleCache (Numpy vs. Dask)
-- S3 using ffspec BlockCache (Numpy vs. Dask)
-- S3 using kerchunk-reference file (Numpy vs. Dask)
-- S3 download & remove (Numpy vs. Dask)
+- S3/GCS using ffspec (Numpy vs. Dask)
+- S3/GCS using ffspec SimpleCache (Numpy vs. Dask)
+- S3/GCS using ffspec BlockCache (Numpy vs. Dask)
+- S3/GCS using kerchunk-reference file (Numpy vs. Dask)
 - netCDF4 mode=byte requests (Dask)
 
 # Dataset characteristics
@@ -42,7 +41,7 @@ GOES16 CONUS array:
 Chunks are compressed with zlib and a deflation level of 1. No bytes shuffle is applied to the arrays.
 Full Disc arrays have 21 % of pixels of unvalid (nan) pixels. 
 
-# Results 
+# S3 Results 
 
 Here we report the elapsed time in seconds with min/mean/max over > 10 tries.
 
@@ -51,69 +50,131 @@ Here we report the elapsed time in seconds with min/mean/max over > 10 tries.
 
 Sorted by elapsed time (in seconds) when reading Full Disc
 
-|                                   | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01      |
-|-----------------------------------|----------------------|-----------------------|--------------------|
-| S3 + FSSPEC + BLOCKCACHE (Numpy)  | 1.29/1.43/1.65       | 0.42/0.44/0.47        | 0.13/0.14/0.14     |
-| Local (Numpy)                     | 1.43/1.48/1.54       | 0.26/0.35/0.37        | 0.04/0.04/0.04     |
-| Local (Dask)                      | 1.22/1.62/1.8        | 1.33/1.55/1.72        | 1.51/1.56/1.67     |
-| S3 + FSSPEC + BLOCKCACHE (Dask)   | 1.3/1.63/1.76        | 1.64/1.69/1.74        | 1.6/1.67/1.83      |
-| S3 + FSSPEC + SIMPLECACHE (Dask)  | 1.58/1.64/1.8        | 1.63/1.69/1.79        | 1.6/1.67/1.83      |
-| S3 + FSSPEC + SIMPLECACHE (Numpy) | 1.59/1.66/1.78       | 0.43/0.44/0.47        | 0.14/0.14/0.15     |
-| Download & Remove (Dask)          | 3.33/3.45/3.6        | 3.29/3.48/3.69        | 3.33/3.44/3.65     |
-| Download & Remove (Numpy)         | 3.88/4.09/4.33       | 2.05/2.21/2.47        | 1.81/1.9/2.06      |
-| HTTPS + bytesIO (Numpy)           | 4.3/4.53/4.67        | 3.12/3.2/3.41         | 2.84/2.99/3.26     |
-| HTTPS + bytesIO (Dask)            | 4.19/5.88/17.94      | 4.24/4.52/4.7         | 4.3/4.49/4.71      |
-| HTTPS + FSSPEC (Dask)             | 13.2/13.73/14.85     | 12.15/14.18/26.61     | 12.85/13.6/16.86   |
-| S3 + FSSPEC (Dask)                | 13.45/14.69/21.88    | 12.42/13.06/13.51     | 12.77/13.51/14.38  |
-| HTTPS + FSSPEC (Numpy)            | 17.1/17.47/18.4      | 8.51/9.07/10.46       | 6.14/6.33/6.6      |
-| S3 + FSSPEC (Numpy)               | 16.64/18.08/23.91    | 8.56/8.96/9.49        | 6.0/6.22/6.49      |
-| Kerchunk (Dask)                   | 26.64/27.36/29.14    | 6.82/7.35/8.07        | 0.6/0.62/0.66      |
-| Kerchunk (Numpy)                  | 261.33/265.8/269.82  | 63.21/65.42/68.93     | 1.11/1.17/1.2      |
-| netCDF #mode=bytes (Dask)         | 270.41/277.14/282.58 | 272.3/279.37/285.73   | 273.9/282.2/294.92 |
+|                                   | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01     |
+|-----------------------------------|----------------------|-----------------------|-------------------|
+| Local (Numpy)                     | 1.33/1.59/1.74       | 0.36/0.38/0.42        | 0.05/0.05/0.05    |
+| Local (Dask)                      | 1.6/1.69/1.77        | 0.35/0.38/0.41        | 0.02/0.02/0.02    |
+| S3 + FSSPEC + SIMPLECACHE (Dask)  | 3.17/3.54/3.75       | 2.17/2.31/2.41        | 1.85/1.98/2.12    |
+| Download & Remove (Numpy)         | 3.14/3.56/4.65       | 2.06/2.2/2.38         | 1.77/1.88/2.06    |
+| S3 + FSSPEC + SIMPLECACHE (Numpy) | 3.35/3.59/3.99       | 2.17/2.29/2.45        | 1.85/1.96/2.04    |
+| Download & Remove (Dask)          | 3.28/3.73/5.29       | 2.1/2.21/2.3          | 1.76/1.89/1.95    |
+| HTTPS + bytesIO (Dask)            | 4.38/4.58/4.82       | 3.17/3.32/3.48        | 2.83/2.98/3.13    |
+| HTTPS + bytesIO (Numpy)           | 4.43/4.61/4.79       | 3.13/3.32/3.46        | 2.85/3.03/3.57    |
+| S3 + FSSPEC (Dask)                | 13.21/14.56/17.08    | 3.71/3.91/4.11        | 1.16/1.22/1.28    |
+| HTTPS + FSSPEC (Dask)             | 13.25/16.34/35.72    | 3.65/3.95/5.13        | 1.15/1.21/1.27    |
+| S3 + FSSPEC (Numpy)               | 17.18/18.29/21.61    | 8.36/8.98/9.73        | 5.81/6.14/6.39    |
+| HTTPS + FSSPEC (Numpy)            | 16.75/19.54/35.32    | 8.3/8.78/9.49         | 5.71/6.02/6.33    |
+| Kerchunk (Dask)                   | 27.17/28.07/32.43    | 7.24/7.63/8.37        | 0.57/0.59/0.66    |
+| Kerchunk (Numpy)                  | 28.91/29.83/30.89    | 7.96/8.17/8.38        | 1.18/1.21/1.3     |
+| netCDF #mode=bytes (Dask)         | 272.03/276.12/285.54 | 79.44/81.5/83.46      | 17.31/17.93/18.83 |
 
 Sorted by elapsed time (in seconds) when reading 1/4 of Full Disc
 
-|                                   | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01      |
-|-----------------------------------|----------------------|-----------------------|--------------------|
-| Local (Numpy)                     | 1.43/1.48/1.54       | 0.26/0.35/0.37        | 0.04/0.04/0.04     |
-| S3 + FSSPEC + SIMPLECACHE (Numpy) | 1.59/1.66/1.78       | 0.43/0.44/0.47        | 0.14/0.14/0.15     |
-| S3 + FSSPEC + BLOCKCACHE (Numpy)  | 1.29/1.43/1.65       | 0.42/0.44/0.47        | 0.13/0.14/0.14     |
-| Local (Dask)                      | 1.22/1.62/1.8        | 1.33/1.55/1.72        | 1.51/1.56/1.67     |
-| S3 + FSSPEC + SIMPLECACHE (Dask)  | 1.58/1.64/1.8        | 1.63/1.69/1.79        | 1.6/1.67/1.83      |
-| S3 + FSSPEC + BLOCKCACHE (Dask)   | 1.3/1.63/1.76        | 1.64/1.69/1.74        | 1.6/1.67/1.83      |
-| Download & Remove (Numpy)         | 3.88/4.09/4.33       | 2.05/2.21/2.47        | 1.81/1.9/2.06      |
-| HTTPS + bytesIO (Numpy)           | 4.3/4.53/4.67        | 3.12/3.2/3.41         | 2.84/2.99/3.26     |
-| Download & Remove (Dask)          | 3.33/3.45/3.6        | 3.29/3.48/3.69        | 3.33/3.44/3.65     |
-| HTTPS + bytesIO (Dask)            | 4.19/5.88/17.94      | 4.24/4.52/4.7         | 4.3/4.49/4.71      |
-| Kerchunk (Dask)                   | 26.64/27.36/29.14    | 6.82/7.35/8.07        | 0.6/0.62/0.66      |
-| S3 + FSSPEC (Numpy)               | 16.64/18.08/23.91    | 8.56/8.96/9.49        | 6.0/6.22/6.49      |
-| HTTPS + FSSPEC (Numpy)            | 17.1/17.47/18.4      | 8.51/9.07/10.46       | 6.14/6.33/6.6      |
-| S3 + FSSPEC (Dask)                | 13.45/14.69/21.88    | 12.42/13.06/13.51     | 12.77/13.51/14.38  |
-| HTTPS + FSSPEC (Dask)             | 13.2/13.73/14.85     | 12.15/14.18/26.61     | 12.85/13.6/16.86   |
-| Kerchunk (Numpy)                  | 261.33/265.8/269.82  | 63.21/65.42/68.93     | 1.11/1.17/1.2      |
-| netCDF #mode=bytes (Dask)         | 270.41/277.14/282.58 | 272.3/279.37/285.73   | 273.9/282.2/294.92 |
+|                                   | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01     |
+|-----------------------------------|----------------------|-----------------------|-------------------|
+| Local (Numpy)                     | 1.33/1.59/1.74       | 0.36/0.38/0.42        | 0.05/0.05/0.05    |
+| Local (Dask)                      | 1.6/1.69/1.77        | 0.35/0.38/0.41        | 0.02/0.02/0.02    |
+| Download & Remove (Numpy)         | 3.14/3.56/4.65       | 2.06/2.2/2.38         | 1.77/1.88/2.06    |
+| Download & Remove (Dask)          | 3.28/3.73/5.29       | 2.1/2.21/2.3          | 1.76/1.89/1.95    |
+| S3 + FSSPEC + SIMPLECACHE (Numpy) | 3.35/3.59/3.99       | 2.17/2.29/2.45        | 1.85/1.96/2.04    |
+| S3 + FSSPEC + SIMPLECACHE (Dask)  | 3.17/3.54/3.75       | 2.17/2.31/2.41        | 1.85/1.98/2.12    |
+| HTTPS + bytesIO (Numpy)           | 4.43/4.61/4.79       | 3.13/3.32/3.46        | 2.85/3.03/3.57    |
+| HTTPS + bytesIO (Dask)            | 4.38/4.58/4.82       | 3.17/3.32/3.48        | 2.83/2.98/3.13    |
+| S3 + FSSPEC (Dask)                | 13.21/14.56/17.08    | 3.71/3.91/4.11        | 1.16/1.22/1.28    |
+| HTTPS + FSSPEC (Dask)             | 13.25/16.34/35.72    | 3.65/3.95/5.13        | 1.15/1.21/1.27    |
+| Kerchunk (Dask)                   | 27.17/28.07/32.43    | 7.24/7.63/8.37        | 0.57/0.59/0.66    |
+| Kerchunk (Numpy)                  | 28.91/29.83/30.89    | 7.96/8.17/8.38        | 1.18/1.21/1.3     |
+| HTTPS + FSSPEC (Numpy)            | 16.75/19.54/35.32    | 8.3/8.78/9.49         | 5.71/6.02/6.33    |
+| S3 + FSSPEC (Numpy)               | 17.18/18.29/21.61    | 8.36/8.98/9.73        | 5.81/6.14/6.39    |
+| netCDF #mode=bytes (Dask)         | 272.03/276.12/285.54 | 79.44/81.5/83.46      | 17.31/17.93/18.83 |
 
 Sorted by elapsed time (in seconds) when reading a single chunk (226,226)
 
-|                                   | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01      |
-|-----------------------------------|----------------------|-----------------------|--------------------|
-| Local (Numpy)                     | 1.43/1.48/1.54       | 0.26/0.35/0.37        | 0.04/0.04/0.04     |
-| S3 + FSSPEC + SIMPLECACHE (Numpy) | 1.59/1.66/1.78       | 0.43/0.44/0.47        | 0.14/0.14/0.15     |
-| S3 + FSSPEC + BLOCKCACHE (Numpy)  | 1.29/1.43/1.65       | 0.42/0.44/0.47        | 0.13/0.14/0.14     |
-| Kerchunk (Dask)                   | 26.64/27.36/29.14    | 6.82/7.35/8.07        | 0.6/0.62/0.66      |
-| Kerchunk (Numpy)                  | 261.33/265.8/269.82  | 63.21/65.42/68.93     | 1.11/1.17/1.2      |
-| Local (Dask)                      | 1.22/1.62/1.8        | 1.33/1.55/1.72        | 1.51/1.56/1.67     |
-| S3 + FSSPEC + SIMPLECACHE (Dask)  | 1.58/1.64/1.8        | 1.63/1.69/1.79        | 1.6/1.67/1.83      |
-| S3 + FSSPEC + BLOCKCACHE (Dask)   | 1.3/1.63/1.76        | 1.64/1.69/1.74        | 1.6/1.67/1.83      |
-| Download & Remove (Numpy)         | 3.88/4.09/4.33       | 2.05/2.21/2.47        | 1.81/1.9/2.06      |
-| HTTPS + bytesIO (Numpy)           | 4.3/4.53/4.67        | 3.12/3.2/3.41         | 2.84/2.99/3.26     |
-| Download & Remove (Dask)          | 3.33/3.45/3.6        | 3.29/3.48/3.69        | 3.33/3.44/3.65     |
-| HTTPS + bytesIO (Dask)            | 4.19/5.88/17.94      | 4.24/4.52/4.7         | 4.3/4.49/4.71      |
-| S3 + FSSPEC (Numpy)               | 16.64/18.08/23.91    | 8.56/8.96/9.49        | 6.0/6.22/6.49      |
-| HTTPS + FSSPEC (Numpy)            | 17.1/17.47/18.4      | 8.51/9.07/10.46       | 6.14/6.33/6.6      |
-| S3 + FSSPEC (Dask)                | 13.45/14.69/21.88    | 12.42/13.06/13.51     | 12.77/13.51/14.38  |
-| HTTPS + FSSPEC (Dask)             | 13.2/13.73/14.85     | 12.15/14.18/26.61     | 12.85/13.6/16.86   |
-| netCDF #mode=bytes (Dask)         | 270.41/277.14/282.58 | 272.3/279.37/285.73   | 273.9/282.2/294.92 |
+|                                   | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01     |
+|-----------------------------------|----------------------|-----------------------|-------------------|
+| Local (Dask)                      | 1.6/1.69/1.77        | 0.35/0.38/0.41        | 0.02/0.02/0.02    |
+| Local (Numpy)                     | 1.33/1.59/1.74       | 0.36/0.38/0.42        | 0.05/0.05/0.05    |
+| Kerchunk (Dask)                   | 27.17/28.07/32.43    | 7.24/7.63/8.37        | 0.57/0.59/0.66    |
+| Kerchunk (Numpy)                  | 28.91/29.83/30.89    | 7.96/8.17/8.38        | 1.18/1.21/1.3     |
+| HTTPS + FSSPEC (Dask)             | 13.25/16.34/35.72    | 3.65/3.95/5.13        | 1.15/1.21/1.27    |
+| S3 + FSSPEC (Dask)                | 13.21/14.56/17.08    | 3.71/3.91/4.11        | 1.16/1.22/1.28    |
+| Download & Remove (Numpy)         | 3.14/3.56/4.65       | 2.06/2.2/2.38         | 1.77/1.88/2.06    |
+| Download & Remove (Dask)          | 3.28/3.73/5.29       | 2.1/2.21/2.3          | 1.76/1.89/1.95    |
+| S3 + FSSPEC + SIMPLECACHE (Numpy) | 3.35/3.59/3.99       | 2.17/2.29/2.45        | 1.85/1.96/2.04    |
+| S3 + FSSPEC + SIMPLECACHE (Dask)  | 3.17/3.54/3.75       | 2.17/2.31/2.41        | 1.85/1.98/2.12    |
+| HTTPS + bytesIO (Dask)            | 4.38/4.58/4.82       | 3.17/3.32/3.48        | 2.83/2.98/3.13    |
+| HTTPS + bytesIO (Numpy)           | 4.43/4.61/4.79       | 3.13/3.32/3.46        | 2.85/3.03/3.57    |
+| HTTPS + FSSPEC (Numpy)            | 16.75/19.54/35.32    | 8.3/8.78/9.49         | 5.71/6.02/6.33    |
+| S3 + FSSPEC (Numpy)               | 17.18/18.29/21.61    | 8.36/8.98/9.73        | 5.81/6.14/6.39    |
+| netCDF #mode=bytes (Dask)         | 272.03/276.12/285.54 | 79.44/81.5/83.46      | 17.31/17.93/18.83 |
+
+
+# GCS Results 
+
+Here we report the elapsed time in seconds with min/mean/max over > 10 tries.
+
+`ReadFullDisc_C01` and `ReadQuarterDisc_C01` uses Dask chunks of (226 * 12, 226 * 12) corresponding to a total 16 and 4 Dask tasks respectively.
+`ReadChunk_C01`uses Dask chunks of (226, 226) corresponding to 1 Dask task. 
+
+Sorted by elapsed time (in seconds) when reading Full Disc
+
+|                                    | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01     |
+|------------------------------------|----------------------|-----------------------|-------------------|
+| Local (Numpy)                      | 1.32/1.38/1.54       | 0.36/0.37/0.38        | 0.05/0.05/0.05    |
+| Local (Dask)                       | 1.52/1.64/1.76       | 0.36/0.38/0.4         | 0.02/0.02/0.02    |
+| Download & Remove (Numpy)          | 2.12/2.22/2.32       | 0.94/0.95/0.96        | 0.64/0.64/0.65    |
+| Download & Remove (Dask)           | 2.17/2.25/2.41       | 0.96/1.0/1.02         | 0.64/0.65/0.65    |
+| GCS + FSSPEC + SIMPLECACHE (Numpy) | 2.23/2.32/2.41       | 1.03/1.05/1.08        | 0.73/0.75/0.86    |
+| GCS + FSSPEC + SIMPLECACHE (Dask)  | 2.24/2.32/2.49       | 1.05/1.08/1.12        | 0.74/0.75/0.75    |
+| HTTPS + bytesIO (Numpy)            | 2.3/2.45/3.03        | 1.01/1.1/1.13         | 0.79/0.81/0.83    |
+| HTTPS + bytesIO (Dask)             | 2.29/2.45/2.75       | 1.13/1.15/1.17        | 0.81/0.81/0.82    |
+| Kerchunk (Numpy)                   | 5.62/6.2/8.81        | 2.03/2.36/3.38        | 0.75/0.76/0.77    |
+| GCS + FSSPEC (Dask)                | 7.92/8.1/8.36        | 2.5/2.52/2.57         | 1.04/1.06/1.11    |
+| HTTPS + FSSPEC (Dask)              | 9.88/10.04/10.42     | 3.02/3.07/3.25        | 1.05/1.06/1.07    |
+| GCS + FSSPEC (Numpy)               | 12.38/12.81/14.43    | 6.54/6.62/6.75        | 4.58/4.66/4.74    |
+| HTTPS + FSSPEC (Numpy)             | 13.25/13.34/13.6     | 6.59/6.66/6.78        | 4.61/4.65/4.69    |
+| Kerchunk (Dask)                    | 19.96/20.22/20.94    | 5.7/5.74/5.77         | 0.56/0.59/0.6     |
+| netCDF #mode=bytes (Dask)          | 282.82/286.59/293.31 | 84.03/84.82/89.28     | 17.85/18.03/18.34 |
+
+Sorted by elapsed time (in seconds) when reading 1/4 of Full Disc
+
+|                                    | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01     |
+|------------------------------------|----------------------|-----------------------|-------------------|
+| Local (Numpy)                      | 1.32/1.38/1.54       | 0.36/0.37/0.38        | 0.05/0.05/0.05    |
+| Local (Dask)                       | 1.52/1.64/1.76       | 0.36/0.38/0.4         | 0.02/0.02/0.02    |
+| Download & Remove (Numpy)          | 2.12/2.22/2.32       | 0.94/0.95/0.96        | 0.64/0.64/0.65    |
+| Download & Remove (Dask)           | 2.17/2.25/2.41       | 0.96/1.0/1.02         | 0.64/0.65/0.65    |
+| GCS + FSSPEC + SIMPLECACHE (Numpy) | 2.23/2.32/2.41       | 1.03/1.05/1.08        | 0.73/0.75/0.86    |
+| GCS + FSSPEC + SIMPLECACHE (Dask)  | 2.24/2.32/2.49       | 1.05/1.08/1.12        | 0.74/0.75/0.75    |
+| HTTPS + bytesIO (Numpy)            | 2.3/2.45/3.03        | 1.01/1.1/1.13         | 0.79/0.81/0.83    |
+| HTTPS + bytesIO (Dask)             | 2.29/2.45/2.75       | 1.13/1.15/1.17        | 0.81/0.81/0.82    |
+| Kerchunk (Numpy)                   | 5.62/6.2/8.81        | 2.03/2.36/3.38        | 0.75/0.76/0.77    |
+| GCS + FSSPEC (Dask)                | 7.92/8.1/8.36        | 2.5/2.52/2.57         | 1.04/1.06/1.11    |
+| HTTPS + FSSPEC (Dask)              | 9.88/10.04/10.42     | 3.02/3.07/3.25        | 1.05/1.06/1.07    |
+| Kerchunk (Dask)                    | 19.96/20.22/20.94    | 5.7/5.74/5.77         | 0.56/0.59/0.6     |
+| GCS + FSSPEC (Numpy)               | 12.38/12.81/14.43    | 6.54/6.62/6.75        | 4.58/4.66/4.74    |
+| HTTPS + FSSPEC (Numpy)             | 13.25/13.34/13.6     | 6.59/6.66/6.78        | 4.61/4.65/4.69    |
+| netCDF #mode=bytes (Dask)          | 282.82/286.59/293.31 | 84.03/84.82/89.28     | 17.85/18.03/18.34 |
+
+Sorted by elapsed time (in seconds) when reading a single chunk (226,226)
+
+|                                    | ReadFullDisc_C01     | ReadQuarterDisc_C01   | ReadChunk_C01     |
+|------------------------------------|----------------------|-----------------------|-------------------|
+| Local (Dask)                       | 1.52/1.64/1.76       | 0.36/0.38/0.4         | 0.02/0.02/0.02    |
+| Local (Numpy)                      | 1.32/1.38/1.54       | 0.36/0.37/0.38        | 0.05/0.05/0.05    |
+| Kerchunk (Dask)                    | 19.96/20.22/20.94    | 5.7/5.74/5.77         | 0.56/0.59/0.6     |
+| Download & Remove (Numpy)          | 2.12/2.22/2.32       | 0.94/0.95/0.96        | 0.64/0.64/0.65    |
+| Download & Remove (Dask)           | 2.17/2.25/2.41       | 0.96/1.0/1.02         | 0.64/0.65/0.65    |
+| GCS + FSSPEC + SIMPLECACHE (Numpy) | 2.23/2.32/2.41       | 1.03/1.05/1.08        | 0.73/0.75/0.86    |
+| GCS + FSSPEC + SIMPLECACHE (Dask)  | 2.24/2.32/2.49       | 1.05/1.08/1.12        | 0.74/0.75/0.75    |
+| Kerchunk (Numpy)                   | 5.62/6.2/8.81        | 2.03/2.36/3.38        | 0.75/0.76/0.77    |
+| HTTPS + bytesIO (Numpy)            | 2.3/2.45/3.03        | 1.01/1.1/1.13         | 0.79/0.81/0.83    |
+| HTTPS + bytesIO (Dask)             | 2.29/2.45/2.75       | 1.13/1.15/1.17        | 0.81/0.81/0.82    |
+| HTTPS + FSSPEC (Dask)              | 9.88/10.04/10.42     | 3.02/3.07/3.25        | 1.05/1.06/1.07    |
+| GCS + FSSPEC (Dask)                | 7.92/8.1/8.36        | 2.5/2.52/2.57         | 1.04/1.06/1.11    |
+| HTTPS + FSSPEC (Numpy)             | 13.25/13.34/13.6     | 6.59/6.66/6.78        | 4.61/4.65/4.69    |
+| GCS + FSSPEC (Numpy)               | 12.38/12.81/14.43    | 6.54/6.62/6.75        | 4.58/4.66/4.74    |
+| netCDF #mode=bytes (Dask)          | 282.82/286.59/293.31 | 84.03/84.82/89.28     | 17.85/18.03/18.34 |
 
 # Notes on NetCDF4/HDF5, Zarr and Kerchunk 
   
