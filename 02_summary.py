@@ -12,8 +12,9 @@ import tabulate
 import numpy as np
 import pandas as pd
 
-results_dir = "/home/ghiggi/Projects/goes_benchmarks/results/"
-# results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/results/"
+results_dir = "/home/ghiggi/Projects/goes_benchmarks/s3_results/"
+results_dir = "/home/ghiggi/Projects/goes_benchmarks/gcs_results/"
+# results_dir = "/home/ghiggi/Projects/0_Miscellaneous/goes_benchmarks/s3_results/"
 
 patterns = ["ReadFullDisc_C01", 
             "ReadQuarterDisc_C01",
@@ -64,6 +65,13 @@ ordered_keys = list(ordered_dict.keys())
 df.loc[ordered_keys]
 print(tabulate.tabulate(df.loc[ordered_keys], headers="keys", tablefmt='github'))
 
+## ReadQuarterDisc_C01 
+pattern = "ReadQuarterDisc_C01"
+ordered_dict = {k: v for k, v in sorted(global_dict[pattern] .items(), key=lambda item: item[1])}
+ordered_keys = list(ordered_dict.keys())
+df.loc[ordered_keys]
+print(tabulate.tabulate(df.loc[ordered_keys], headers="keys", tablefmt='github'))
+
 ## ReadChunk_C01 
 pattern = "ReadChunk_C01"
 ordered_dict = {k: v for k, v in sorted(global_dict[pattern] .items(), key=lambda item: item[1])}
@@ -71,11 +79,6 @@ ordered_keys = list(ordered_dict.keys())
 df.loc[ordered_keys]
 print(tabulate.tabulate(df.loc[ordered_keys], headers="keys", tablefmt='github'))
 
-## ReadQuarterDisc_C01 
-pattern = "ReadQuarterDisc_C01"
-ordered_dict = {k: v for k, v in sorted(global_dict[pattern] .items(), key=lambda item: item[1])}
-ordered_keys = list(ordered_dict.keys())
-df.loc[ordered_keys]
-print(tabulate.tabulate(df.loc[ordered_keys], headers="keys", tablefmt='github'))
+
 
 
